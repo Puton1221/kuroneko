@@ -288,13 +288,18 @@ client.on('messageCreate', async message => {
                 .setThumbnail("https://github.com/KuronekoServer/typing-web/blob/main/kuroneko.jpg?raw=true")　//Embedのサムネイル
                 .setImage("https://github.com/kuroneko6423/kuroneko6423/blob/main/kuronekoServer.jpg?raw=true")　//Embedのイメージ
                 .addField("KuronekoServer WebSite", "https://kuroneko6423.com")　//Embedのフィールド
-                .addField("黒猫ちゃん(管理者&運営)", "https://kuroneko6423.com/")　//Embedのフィールド
-                .addField("Yuukiさん(モデレーター)", "https://kuroneko6423.com/Yuuki")　//Embedのフィールド
-                .addField("Nabrさん(共同開発者)", "七色サーバー運営者")　//Embedのフィールド
-                .addField("ねこかわいいさん(共同開発者)", "rispuの運営者")　//Embedのフィールド
-                .addField("ぷとんさん(共同開発者)", "なし")　//Embedのフィールド
-                .addField("ハンターイカさん(共同開発者)", "なし")　//Embedのフィールド
-                .addField("!¿֍𝓪𝓷𝓶𝓸𝓽𝓲֍?¡さん(共同開発者)", "なし")　//Embedのフィールド
+                .addField("黒猫ちゃん(Owner)", "https://kuroneko6423.com/")　//Embedのフィールド
+                .addField("ねこかわいいさん(Admin)", "全面的な管理")　//Embedのフィールド
+	        .addField("?Sw()m%kLc$VfD!(Admin)", "全面的な管理")　//Embedのフィールド
+                .addField("Nabrさん(Admin)", "サーバー関係管理")　//Embedのフィールド
+	    	.addField("yukunさん(Server related)", "サーバー関係管理")　//Embedのフィールド
+                .addField("Yuukiさん(moderator)", "荒らし対策管理")　//Embedのフィールド
+                .addField("ぷとんさん(developer)", "js部門")　//Embedのフィールド
+	        .addField("BR(BURI)さん(developer)", "js部門")　//Embedのフィールド
+                .addField("🍊.exeさん(developer)", "py,js部門")　//Embedのフィールド
+                .addField("!¿֍𝓪𝓷𝓶𝓸𝓽𝓲֍?¡さん(developer)", "js部門")　//Embedのフィールド
+	        .addField("ap12さん(developer)", "js部門")　//Embedのフィールド
+	        .addField("yutarou1241477さん(developer)", "py部門")　//Embedのフィールド
                 .setFooter("KuronekoServer")　//Embedのフッター
                 .setColor("RANDOM")　//Embedのカラー
                 .setTimestamp();
