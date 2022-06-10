@@ -1,8 +1,13 @@
+// npm i keyv @keyv/sqlite pify discord.js@13
+
 console.log(require('discord.js').version)
 require("dotenv").config();
 const { Client, Intents, MessageEmbed, Permissions, MessageActionRow,  MessageButton, } = require('discord.js');
 const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_PRESENCES] });
 // const fs = require('fs');
+
+const Keyv = require('keyv');
+const levels = new Keyv('sqlite://db.sqlite', { table: 'levels' });
 
 const prefix = '!'
 // let connections = {};
@@ -502,6 +507,33 @@ client.on('messageCreate', async message => {
             })
     }
 })
+
+//level機能
+ client.on('messageCreate', async (message) => {
+   // ボットは除外する
+   if (message.author.bot) return;
+ 
+   // ユーザーのレベルを取得する。なければ{ count: 0, level: 0 }にする
+   const level = (await levels.get(message.author.id)) || { count: 0, level: 0 };
+ 
+   // カウントを1増やす
+   level.count += 1;
+   // カウントが100になったら0にして、レベルを1増やす
+   if (level.count >= 100) {
+     level.count = 0;
+     level.level += 1;
+   }
+ 
+   // ユーザーのレベルを保存する
+   levels.set(message.author.id, level);
+ 
+   // !levelコマンドで現在のレベルを出す
+   if (message.content === '!level') {
+     message.channel.send(
+       `現在のレベルは ${level.level} です。次のレベルまであと ${100 - level.count}`
+     );
+   }
+ });
 
 //自動返信
 client.on('messageCreate', async message => {
