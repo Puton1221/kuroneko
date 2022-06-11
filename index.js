@@ -684,7 +684,9 @@ client.on('interactionCreate', async(interaction) => {
           parent: ct.id
       }).then(channels => {
           channels.permissionOverwrites.edit(interaction.user.id, {
-              VIEW_CHANNEL: true
+              VIEW_CHANNEL: true,
+              SEND_MESSAGES: true,
+              ADD_REACTIONS: true
           });
           const tic2 = new MessageButton().setCustomId("close").setStyle("PRIMARY").setLabel("閉じる");
           //buttonを作成
