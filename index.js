@@ -8,7 +8,6 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 
 const Keyv = require('keyv');
 const levels = new Keyv('sqlite://db.sqlite', { table: 'levels' });
-
 const prefix = '!'
 // let connections = {};
 // let speak_chs = {};
@@ -177,7 +176,12 @@ client.on('messageCreate', async message => {
                     {
                         name: "!tc [ticketのタイトル]",
                         value: "ticketを作ります。"
+                    },
+                    {
+                        name: "!level",
+                        value: "現在のレベルを表示します"
                     }
+
                 ]
             })
             message.channel.send({embeds: [embed]})
@@ -284,18 +288,16 @@ client.on('messageCreate', async message => {
             message.channel.send({embeds: [embed]});
         break;
 
-
         case 'aml':
             var embed = new MessageEmbed()
                 .setTitle("KuronekoServer運営List")　//Embedのタイトル
                 .setURL("https://kuroneko6423.com/Admin")　//タイトルに埋め込むURL
-                .setAuthor("KuronekoServerAdminList", "https://github.com/KuronekoServer/typing-web/blob/main/kuroneko.jpg?raw=true") //Embedのアウター
-                .setThumbnail("https://github.com/KuronekoServer/typing-web/blob/main/kuroneko.jpg?raw=true")　//Embedのサムネイル
-                .setImage("https://github.com/kuroneko6423/kuroneko6423/blob/main/kuronekoServer.jpg?raw=true")　//Embedのイメージ
+                .setAuthor("KuronekoServerAdminList", "https://raw.githubusercontent.com/KuronekoServer/icon/main/kuroneko-logo.png") //Embedのアウター
+                .setThumbnail("https://raw.githubusercontent.com/KuronekoServer/icon/main/kuroneko-logo.png")　//Embedのサムネイル
                 .addField("KuronekoServer WebSite", "https://kuroneko6423.com")　//Embedのフィールド
-                .addField("黒猫ちゃん(Owner)", "https://kuroneko6423.com/")　//Embedのフィールド
+                .addField("黒猫ちゃん(Owner)", "オーナー")　//Embedのフィールド
                 .addField("ねこかわいいさん(Admin)", "全面的な管理")　//Embedのフィールド
-	        .addField("?Sw()m%kLc$VfD!(Admin)", "全面的な管理")　//Embedのフィールド
+	        .addField("?Sw()m%kLc$VfD!さん(Admin)", "全面的な管理")　//Embedのフィールド
                 .addField("Nabrさん(Admin)", "サーバー関係管理")　//Embedのフィールド
 	    	.addField("yukunさん(Server related)", "サーバー関係管理")　//Embedのフィールド
                 .addField("Yuukiさん(moderator)", "荒らし対策管理")　//Embedのフィールド
@@ -311,7 +313,6 @@ client.on('messageCreate', async message => {
 
             message.channel.send({embeds: [embed]}); 
         break;
-
 
 //bot導入宣伝
         case 'in':
@@ -442,6 +443,11 @@ client.on('messageCreate', async message => {
                             {
                                 name: "userguild",
                                 value: `${member.guild}`
+                            },
+                            {
+                                name: "サーバー参加日数",
+                                value: '${period}',
+                                inline: true
                             }
                         ]
                     }
@@ -588,6 +594,18 @@ client.on('messageCreate', async message => {
         case 'あけおめ':
             msg = 'あけおめ！ :boom::boom::boom: '
         break;
+        case 'あけおめ':
+            msg = 'Yuuki誕生日おめでとう！'
+        break;
+        case '誕生日おめでとう！':
+            msg = '誕生日おめでとおおおおおおお！'
+        break;
+        case '誕生日':
+            msg = 'おめでとおおお！88888888'
+        break;
+        case 'たんおめ':
+            msg = '誕生日おめでとおおおおおおお！'
+        break;
     }
     if (msg){
         message.channel.send({content: msg})
@@ -684,9 +702,7 @@ client.on('interactionCreate', async(interaction) => {
           parent: ct.id
       }).then(channels => {
           channels.permissionOverwrites.edit(interaction.user.id, {
-              VIEW_CHANNEL: true,
-              SEND_MESSAGES: true,
-              ADD_REACTIONS: true
+              VIEW_CHANNEL: true
           });
           const tic2 = new MessageButton().setCustomId("close").setStyle("PRIMARY").setLabel("閉じる");
           //buttonを作成
@@ -751,7 +767,6 @@ client.on('messageCreate', async message => {
   })
       .catch(console.error);
 });
-
 client.on('messageCreate', async message => {
   const re = /https:\/\/ptb.discord\.com\/channels\/(\d{16,19})\/(\d{16,19})\/(\d{16,19})/
   const results = message.content.match(re)
@@ -836,5 +851,26 @@ client.on('messageCreate', async message => {
   })
       .catch(console.error);
 });
+//メッセージURL展開終わり===================================
+
+// サーバーにいるメンバーにロールを全員に付与するやーつ
+client.on('messageCreate', message => {
+   if (!message.guild) return // サーバーでない場合は無視
+   
+   if (message.content === '!add-role-all-members') { // メッセージの内容が「!add-role-all-members」だったら
+     message.guild.members.fetch() // メンバーを全員取得
+       .then(members => Promise.all(members.map(member => member.roles.add('役職ID')))) // 全員に同じ役職を与える
+       .catch(console.error)
+   }
+ })
+// 終わり
+
+// banlist
+// client.on('messageCreate', async message => {
+//   if (message.content === '!admin-bans' && message.guild) {
+//     const bans = await message.guild.bans.fetch()
+//     message.channel.send(bans.map(ban => ban.user.tag).join(', ') || 'none')
+//   }
+//  })
 
 client.login(process.env.DISCORD_TOKEN).catch(err => console.warn(err));
