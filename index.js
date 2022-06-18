@@ -512,6 +512,35 @@ client.on('messageCreate', async message => {
                 console.warn(reason)
                 return message.channel.send({ content: "エラーが発生しました"})
             })
+        break;
+//ロール付与(API対策) : Code by Puton
+        case 'addrole':
+            if (!message.member.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) return message.channe.send("❌ 権限が不足しています。"); //権限不足時
+
+            const role_id = (message.mentions.roles.size > 0) ? message.mentions.roles.first().id : args[0];
+            if (!role_id) return message.channel.send({ content: 'エラー: ロールが指定されていません\nIDかメンションで指定してください', ephemeral: true });
+            const role = message.guild.roles.cache.get(role_id);
+            message.guild.members.fetch()
+            .then(members => { 
+                const users = members.filter(member => !member.user.bot) //bot以外のメンバーに絞る
+                users.map(async member => {
+                await timeout(3000); //API回避のために3秒ずつ付与
+                member.roles.add(role);
+              })
+            })
+            .catch(err => {
+                console.warn(err);
+                return message.channel.send({ content: `エラーが発生しました。`, ephemeral: true });
+            });
+            message.channel.send(`${role.name}を付与します。\n> この処理には時間がかかることがあります。`);
+        
+            function timeout(time) {
+              return new Promise((resolve) => {
+                setTimeout(() => {
+                  resolve();
+                }, time);
+              });
+            };
     }
 })
 
