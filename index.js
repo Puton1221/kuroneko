@@ -8,6 +8,7 @@ const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_
 
 const Keyv = require('keyv');
 const levels = new Keyv('sqlite://db.sqlite', { table: 'levels' });
+const db = new Keyv(`sqlite://role.sqlite`, { table: "role" });//@keyv/sqlite
 const prefix = '!'
 // let connections = {};
 // let speak_chs = {};
@@ -872,5 +873,155 @@ client.on('messageCreate', message => {
 //     message.channel.send(bans.map(ban => ban.user.tag).join(', ') || 'none')
 //   }
 //  })
+
+const newbutton = buttondata => {
+    //独自の関数を作る(ボタン作成の関数)
+    return {
+        components: buttondata.map(data => {
+            return { custom_id: data.id, label: data.label, style: data.style || 1, type: 2 }
+        }),
+        type: 1
+    }
+    //JSON型で返す
+};
+let us = [];
+//usにからの配列を代入する
+let checkus = [];
+//checkusにからの配列を代入する
+client.on("messageCreate", async message => {
+    //messageCreateイベントを発火させてmessageにclassを代入して渡す
+    if (message.content == "!認証画面") {
+        //messageのcontentのプロパティが!画面表示だったらカッコ内の処理をする
+        if (!await db.get(message.guild.id)) return message.reply("ロールをsetしてください");
+        //dbにメッセージが打たれたギルドIDが保存されているか判定してなかったら注意のメッセージを送信する
+        message.reply({
+            //メッセージ送信
+            embeds: [{
+                description: "認証します\n認証ボタンでスタート\n出てきた数字順に数字のボタンを押してください\n完了したらもう一度認証ボタンを押してください\n認証失敗や、やり直したい場合は消ボタンを押してください"
+            }],
+            //embedを指定する
+            components: [
+                newbutton([{ id: "id1", label: "1" }, { id: "id2", label: "2" }, { id: "id3", label: "3" }]),
+                newbutton([{ id: "id4", label: "4" }, { id: "id5", label: "5" }, { id: "id6", label: "6" }]),
+                newbutton([{ id: "id7", label: "7" }, { id: "id8", label: "8" }, { id: "id9", label: "9" }]),
+                newbutton([{ id: "check", label: "認証", style: 3 }, { id: "id0", label: "0" }, { id: "delete", label: "消", style: 4 }])
+                //idがカスタムIDラベルが表示されるラベル
+            ]
+            //ボタンを指定するこの時初めに作ったnewbutton関数を呼び出す
+        });
+    };
+    if (message.content.startsWith("!setrole")) {
+        //messageのcontentのプロパティが!setroleだったらカッコ内の処理をする
+        const args = message.content.split(" ")[1].replace(/[^0-9]/g, '');
+        //打たれたメッセージの空白から1番目の値を数値のみにする
+        const role = message.guild.roles.cache.get(args);
+        //メッセージが打たれたギルドでそのロールがあるか判定する
+        if (!role) return message.reply(`ロールが見つかりませんでした\n${args}`);
+        //なかったら注意のメッセージを送信する
+        const check = await message.guild.me.roles.add(role).catch(e => message.reply(`エラーが発生しました\nerror:${e}`));
+        //取得したロールを自分につけて権限が問題ないかチェックする
+        if (check.content) return;
+        //問題があったら処理しない
+        await db.set(message.guild.id, args);
+        //DBにメッセージギルドをkeyにして値をロールIDにする
+        message.reply("完了しました");
+        //処理が終わったら完了のメッセージを送る
+    };
+});
+client.on("interactionCreate", async interaction => {
+    //interactionのイベントを発火させてinteraction classをinteractionに代入する
+    if (interaction.customId.startsWith("id")) {
+        //customIDの初めの値がidだったら実行する
+        if (!us[interaction.userId]) return interaction.reply({ content: "認証ボタンを押してください", ephemeral: true });
+        //usのinteraction.userIdに何も保存されていなかったら注意のメッセージを送信する
+        await interaction.deferUpdate();
+        //interactionをアップデートする
+        try {
+            //エラーが出ないか試す
+            checkus[interaction.userId].push(interaction.customId.slice(2))
+            //checkusのinteraction.userIdに押された番号の数値を追加する
+        } catch (e) {
+            //エラーが起きた場合
+            interaction.followUp({ content: "Time outしました", ephemeral: true })
+            //エラーが起きるのは大体checkusのinteraction.userIdが存在しない時なのでその旨を表示する
+        };
+    };
+    if (interaction.customId == "check") {
+        //カスタムIDがcheckだったら処理
+        if (!us[interaction.userId]) {
+            //usにユーザーIDのプロパティがなかったら処理する
+            let num = [];
+            //numにからの配列を代入する
+            for (i = 0; i < 4; i++)num.push(Math.floor(Math.random() * 9))
+            //4桁の数値を一個一個配列にしてnumに保存
+            us[interaction.userId] = num;
+            //usのユーザーIDのプロパティに作成したnumを代入
+            checkus[interaction.userId] = [];
+            //checkusのユーザーIDのプロパティにからの配列を代入
+            interaction.reply({
+                //メッセージ送信
+                embeds: [{
+                    description: `あなたの認証コードは\n${num.join(",")}\n600秒以内に完了させてください`
+                }],
+                //embedを設定する
+                ephemeral: true
+                //その人にしか見えないようにする
+            });
+
+            setTimeout(() => {
+                //600*1000ms(600s)たったら処理をする
+                try {
+                    //試す
+                    delete us[interaction.userId];
+                    delete checkus[interaction.userId];
+                    //メモリーを開けるために古いデータを消す
+                } catch (e) {
+                    //古いデータがなかったときにエラーが出るのでerrorハンドリングする
+                }
+            }, 600 * 1000);
+        } else {
+            //usにユーザーIDのプロパティがあったら処理する
+            if (us[interaction.userId]?.join("") !== checkus[interaction.userId]?.join("")) return interaction.reply({ embeds: [{ description: `認証番号が違います\n認証番号${us[interaction.userId].join(",")}\nあなたが打ったコード${checkus[interaction.userId].join(",")}` }], ephemeral: true });
+            //認証番号とその人が今まで打った番号を比較してあっていなかったらその旨を表示する
+            try {
+                //試す
+                delete us[interaction.userId];
+                delete checkus[interaction.userId];
+                //古いデータを消す
+            } catch (e) {
+                //古いデータがなかったらエラーが出るのでエラーハンドリングをする
+            };
+            const role = await db.get(interaction.guildId);
+            //dbからボタンが押されたギルドIDを使ってロールIDを取得する
+            const check = await interaction.member.roles.add(role).catch(e => interaction.reply(`エラーが発生しました、サーバー管理者に問い合わせてください\nerror:${e}`));
+            //ボタンを押した人にロールをつけるロールをつけるのに失敗したらその旨を表示する
+            if (check.content) return;
+            //ロールをつけられなかったらこの先処理しない
+            interaction.reply({
+                //メッセージを送信する
+                embeds: [{
+                    description: "認証成功"
+                }],
+                //embedを設定する
+                ephemeral: true
+                //その人にしか見えないようにする
+            });
+        }
+    };
+    if (interaction.customId == "delete") {
+        //customIDがdeleteだったら処理をする
+        if (!us[interaction.userId]) return interaction.reply({ content: "認証ボタンを押してください", ephemeral: true });
+        //usのユーザーIDプロパティがなかったらその旨を表示する
+        try {
+            //試す
+            checkus[interaction.userId] = [];
+            //今まで打たれてきたデータをからの配列にする
+        } catch (e) {
+            //今まで打たれてきたデータがなかった場合にエラーが出るのでエラーハンドリングする
+        };
+        interaction.reply({ embeds: [{ description: "消しました" }], ephemeral: true });
+        //完了したらその旨を表示する
+    };
+});
 
 client.login(process.env.DISCORD_TOKEN).catch(err => console.warn(err));
