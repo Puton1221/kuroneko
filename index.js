@@ -530,7 +530,11 @@ client.on('messageCreate', async message => {
             })
             .catch(err => {
                 console.warn(err);
-                return message.channel.send({ content: `エラーが発生しました。`, ephemeral: true });
+                const embed = new MessageEmbed()
+                .setTitle("エラー")
+                .setDescription("コマンド: `addrole`でエラーが発生しました。")
+                
+                return message.channel.send({ embeds: [embed], ephemeral: true });
             });
             message.channel.send(`${role.name}を付与します。\n> この処理には時間がかかることがあります。`);
         
